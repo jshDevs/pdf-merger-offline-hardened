@@ -31,7 +31,6 @@ echo ""
 # ============================================================================
 
 echo -e "${YELLOW}[1/6]${NC} Creando directorio de librerías..."
-
 if [ -d "$LIBS_DIR" ]; then
     echo -e "${YELLOW}Respaldo anterior: $LIBS_DIR → $LIBS_DIR.backup_$TIMESTAMP${NC}"
     mv "$LIBS_DIR" "$LIBS_DIR.backup_$TIMESTAMP"
@@ -218,8 +217,9 @@ echo ""
 
 echo -e "${YELLOW}[6/6]${NC} Resumen final..."
 echo ""
+
 echo -e "${GREEN}╔════════════════════════════════════════════╗${NC}"
-echo -e "${GREEN}║          ✓ DESCARGA COMPLETADA             ║${NC}"
+echo -e "${GREEN}║         ✓ DESCARGA COMPLETADA              ║${NC}"
 echo -e "${GREEN}╚════════════════════════════════════════════╝${NC}"
 echo ""
 

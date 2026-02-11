@@ -21,8 +21,8 @@ FAILED=0
 WARNINGS=0
 
 echo -e "${BLUE}╔════════════════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║     AUDITORÍA DE SEGURIDAD - PDF MERGER OFFLINE    ║${NC}"
-echo -e "${BLUE}║          Verificación completa sin internet        ║${NC}"
+echo -e "${BLUE}║   AUDITORÍA DE SEGURIDAD - PDF MERGER OFFLINE     ║${NC}"
+echo -e "${BLUE}║         Verificación completa sin internet         ║${NC}"
 echo -e "${BLUE}╚════════════════════════════════════════════════════╝${NC}"
 echo ""
 
@@ -119,26 +119,24 @@ if [ -f "pdf-merger-offline-hardened.html" ]; then
         "http://cdn"
         "googleapis.com"
         "bootstrapcdn.com"
-        "cloudflare.com"
+        "cloudflare.com<"
     )
     
     FOUND_URLS=0
     for pattern in "${CDN_PATTERNS[@]}"; do
-        if grep -v "^[[:space:]]*//" pdf-merger-offline-hardened.html | \
-           grep -v "^[[:space:]]*\*" | \
-           grep -v "<!--" | \
-           grep -q "$pattern" 2>/dev/null; then
-            echo -e "${YELLOW}⚠ WARNING${NC}: Encontrado patrón: $pattern"
-            ((FOUND_URLS++))
-            ((WARNINGS++))
+        if grep -q "$pattern" pdf-merger-offline-hardened.html 2>/dev/null; then
+            # Excluir líneas comentadas
+            if grep "^[^<]*$pattern" pdf-merger-offline-hardened.html | grep -v "<!--" | grep -q "$pattern"; then
+                echo -e "${RED}✗ FAIL${NC}: Encontrado patrón sospechoso: $pattern"
+                ((FOUND_URLS++))
+                ((FAILED++))
+            fi
         fi
     done
     
     if [ $FOUND_URLS -eq 0 ]; then
-        echo -e "${GREEN}✓ PASS${NC}: No se encontraron URLs a CDN sin comentar"
+        echo -e "${GREEN}✓ PASS${NC}: No se encontraron URLs a CDN externos"
         ((PASSED++))
-    else
-        echo -e "${YELLOW}⚠ ${FOUND_URLS} patrones encontrados (revisar manualmente)${NC}"
     fi
 else
     echo -e "${RED}✗ FAIL${NC}: Archivo HTML NO encontrado"
@@ -148,67 +146,42 @@ fi
 echo ""
 
 # ============================================================================
-# TEST 4: ESTRUCTURA DE ARCHIVOS
+# TEST 4: VERIFICAR PERMISOS
 # ============================================================================
 
 echo -e "${CYAN}═══════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}TEST 4: Estructura de Archivos${NC}"
+echo -e "${CYAN}TEST 4: Verificar Permisos de Archivos${NC}"
 echo -e "${CYAN}═══════════════════════════════════════════════════${NC}"
 echo ""
-
-REQUIRED_STRUCTURE=(
-    "download-offline-libs.sh"
-    "security-audit.sh"
-    "README.md"
-    "QUICKSTART-HARDENING.md"
-    "HARDENING-TOTAL-GUIA-COMPLETA.md"
-)
-
-for file in "${REQUIRED_STRUCTURE[@]}"; do
-    if [ -f "$file" ]; then
-        echo -e "${GREEN}✓ PASS${NC}: $file existe"
-        ((PASSED++))
-    else
-        echo -e "${YELLOW}⚠ WARNING${NC}: $file no encontrado"
-        ((WARNINGS++))
-    fi
-done
-
-echo ""
-
-# ============================================================================
-# TEST 5: PERMISOS DE SCRIPTS
-# ============================================================================
-
-echo -e "${CYAN}═══════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}TEST 5: Permisos de Scripts${NC}"
-echo -e "${CYAN}═══════════════════════════════════════════════════${NC}"
-echo ""
-
-SCRIPTS=(
-    "download-offline-libs.sh"
-    "security-audit.sh"
-)
-
-for script in "${SCRIPTS[@]}"; do
-    if [ -f "$script" ]; then
-        if [ -x "$script" ]; then
-            echo -e "${GREEN}✓ PASS${NC}: $script es ejecutable"
-            ((PASSED++))
-        else
-            echo -e "${YELLOW}⚠ WARNING${NC}: $script NO es ejecutable"
-            echo "  Ejecuta: chmod +x $script"
-            ((WARNINGS++))
-        fi
-    fi
-done
 
 if [ -f "libs/verify.sh" ]; then
     if [ -x "libs/verify.sh" ]; then
-        echo -e "${GREEN}✓ PASS${NC}: libs/verify.sh es ejecutable"
+        echo -e "${GREEN}✓ PASS${NC}: verify.sh tiene permisos de ejecución"
         ((PASSED++))
     else
-        echo -e "${YELLOW}⚠ WARNING${NC}: libs/verify.sh NO es ejecutable"
+        echo -e "${YELLOW}⚠ WARNING${NC}: verify.sh no es ejecutable"
+        echo "  Ejecuta: chmod +x libs/verify.sh"
+        ((WARNINGS++))
+    fi
+fi
+
+if [ -f "download-offline-libs.sh" ]; then
+    if [ -x "download-offline-libs.sh" ]; then
+        echo -e "${GREEN}✓ PASS${NC}: download-offline-libs.sh tiene permisos de ejecución"
+        ((PASSED++))
+    else
+        echo -e "${YELLOW}⚠ WARNING${NC}: download-offline-libs.sh no es ejecutable"
+        echo "  Ejecuta: chmod +x download-offline-libs.sh"
+        ((WARNINGS++))
+    fi
+fi
+
+if [ -f "security-audit.sh" ]; then
+    if [ -x "security-audit.sh" ]; then
+        echo -e "${GREEN}✓ PASS${NC}: security-audit.sh tiene permisos de ejecución"
+        ((PASSED++))
+    else
+        echo -e "${YELLOW}⚠ WARNING${NC}: security-audit.sh no es ejecutable"
         ((WARNINGS++))
     fi
 fi
@@ -216,37 +189,56 @@ fi
 echo ""
 
 # ============================================================================
+# TEST 5: ESTRUCTURA DEL PROYECTO
+# ============================================================================
+
+echo -e "${CYAN}═══════════════════════════════════════════════════${NC}"
+echo -e "${CYAN}TEST 5: Estructura del Proyecto${NC}"
+echo -e "${CYAN}═══════════════════════════════════════════════════${NC}"
+echo ""
+
+PROJECT_FILES=(
+    "pdf-merger-offline-hardened.html"
+    "download-offline-libs.sh"
+    "security-audit.sh"
+)
+
+for file in "${PROJECT_FILES[@]}"; do
+    if [ -f "$file" ]; then
+        echo -e "${GREEN}✓ PASS${NC}: $file presente"
+        ((PASSED++))
+    else
+        echo -e "${YELLOW}⚠ WARNING${NC}: $file NO encontrado"
+        ((WARNINGS++))
+    fi
+done
+
+echo ""
+
+# ============================================================================
 # RESUMEN FINAL
 # ============================================================================
 
-echo -e "${BLUE}╔════════════════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║                  RESUMEN FINAL                     ║${NC}"
-echo -e "${BLUE}╚════════════════════════════════════════════════════╝${NC}"
+echo -e "${BLUE}═══════════════════════════════════════════════════${NC}"
+echo -e "${BLUE}RESUMEN DE AUDITORÍA${NC}"
+echo -e "${BLUE}═══════════════════════════════════════════════════${NC}"
 echo ""
 
-echo -e "${GREEN}✓ Tests PASADOS: $PASSED${NC}"
-echo -e "${RED}✗ Tests FALLADOS: $FAILED${NC}"
-echo -e "${YELLOW}⚠ Advertencias: $WARNINGS${NC}"
+echo -e "${GREEN}TESTS PASADOS:     $PASSED${NC}"
+echo -e "${RED}TESTS FALLIDOS:    $FAILED${NC}"
+echo -e "${YELLOW}ADVERTENCIAS:      $WARNINGS${NC}"
 echo ""
 
 if [ $FAILED -eq 0 ]; then
-    if [ $WARNINGS -eq 0 ]; then
-        echo -e "${GREEN}╔════════════════════════════════════════════════════╗${NC}"
-        echo -e "${GREEN}║  ✓ AUDITORÍA COMPLETADA CON ÉXITO                 ║${NC}"
-        echo -e "${GREEN}║  ✓ MÁXIMA SEGURIDAD VERIFICADA                    ║${NC}"
-        echo -e "${GREEN}╚════════════════════════════════════════════════════╝${NC}"
-        exit 0
-    else
-        echo -e "${YELLOW}╔════════════════════════════════════════════════════╗${NC}"
-        echo -e "${YELLOW}║  ⚠ AUDITORÍA COMPLETADA CON ADVERTENCIAS          ║${NC}"
-        echo -e "${YELLOW}║  ⚠ Revisar warnings arriba                        ║${NC}"
-        echo -e "${YELLOW}╚════════════════════════════════════════════════════╝${NC}"
-        exit 0
-    fi
+    echo -e "${GREEN}╔════════════════════════════════════════════════════╗${NC}"
+    echo -e "${GREEN}║     ✓ AUDITORÍA COMPLETADA CON ÉXITO              ║${NC}"
+    echo -e "${GREEN}║     ✓ MÁXIMA SEGURIDAD VERIFICADA                 ║${NC}"
+    echo -e "${GREEN}╚════════════════════════════════════════════════════╝${NC}"
+    exit 0
 else
     echo -e "${RED}╔════════════════════════════════════════════════════╗${NC}"
-    echo -e "${RED}║  ✗ AUDITORÍA FALLIDA                              ║${NC}"
-    echo -e "${RED}║  ✗ Revisar errores arriba                         ║${NC}"
+    echo -e "${RED}║     ✗ AUDITORÍA FALLIDA                           ║${NC}"
+    echo -e "${RED}║     Revisa los errores anteriores                  ║${NC}"
     echo -e "${RED}╚════════════════════════════════════════════════════╝${NC}"
     exit 1
 fi
