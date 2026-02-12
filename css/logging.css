@@ -1,0 +1,143 @@
+/**
+ * ============================================================================
+ * SISTEMA DE LOGGING VISUAL
+ * ============================================================================
+ * Archivo: logging.css
+ * Descripción: Estilos para el sistema de notificaciones visuales
+ * ============================================================================
+ */
+
+/* ============================================================================
+   CONTENEDOR DE LOGS
+   ============================================================================ */
+.log-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 350px;
+    max-height: 400px;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+/* ============================================================================
+   ITEM DE LOG
+   ============================================================================ */
+.log-item {
+    background: white;
+    border-left: 4px solid;
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    animation: slideIn 0.3s ease;
+    pointer-events: auto;
+    transition: all 0.3s ease;
+}
+
+.log-item:hover {
+    transform: translateX(-5px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+}
+
+/* ============================================================================
+   TIPOS DE LOG
+   ============================================================================ */
+.log-item.log-success {
+    border-left-color: #28a745;
+    background: #f0fff4;
+}
+
+.log-item.log-error {
+    border-left-color: #dc3545;
+    background: #fff5f5;
+}
+
+.log-item.log-warning {
+    border-left-color: #ffc107;
+    background: #fffbf0;
+}
+
+.log-item.log-info {
+    border-left-color: #17a2b8;
+    background: #f0f9ff;
+}
+
+.log-item.log-security {
+    border-left-color: #6f42c1;
+    background: #f8f5ff;
+}
+
+/* ============================================================================
+   ELEMENTOS DEL LOG
+   ============================================================================ */
+.log-icon {
+    font-size: 1.2em;
+    flex-shrink: 0;
+}
+
+.log-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.log-title {
+    font-weight: 600;
+    font-size: 0.9em;
+    margin-bottom: 2px;
+    color: #333;
+}
+
+.log-message {
+    font-size: 0.85em;
+    color: #666;
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+.log-time {
+    font-size: 0.75em;
+    color: #999;
+    margin-top: 4px;
+}
+
+.log-close {
+    cursor: pointer;
+    color: #999;
+    font-weight: bold;
+    font-size: 1.2em;
+    line-height: 1;
+    transition: color 0.2s;
+    pointer-events: auto;
+    padding: 0 5px;
+}
+
+.log-close:hover {
+    color: #333;
+}
+
+/* ============================================================================
+   RESPONSIVE - LOGGING
+   ============================================================================ */
+@media (max-width: 768px) {
+    .log-container {
+        width: calc(100% - 40px);
+        right: 20px;
+        left: 20px;
+    }
+
+    .log-item {
+        padding: 10px 12px;
+    }
+
+    .log-title {
+        font-size: 0.85em;
+    }
+
+    .log-message {
+        font-size: 0.8em;
+    }
+}

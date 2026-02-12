@@ -1,0 +1,274 @@
+/**
+ * ============================================================================
+ * COMPONENTES DE INTERFAZ
+ * ============================================================================
+ * Archivo: components.css
+ * Descripción: Estilos de componentes reutilizables (dropzone, botones, etc)
+ * ============================================================================
+ */
+
+/* ============================================================================
+   ZONA DE ARRASTRE (DROP ZONE)
+   ============================================================================ */
+.drop-zone {
+    border: 3px dashed #667eea;
+    border-radius: 15px;
+    padding: 60px 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background: #f8f9ff;
+}
+
+.drop-zone:hover {
+    background: #f0f2ff;
+    border-color: #5568d3;
+}
+
+.drop-zone.dragover {
+    background: #e8ebff;
+    border-color: #4451b8;
+    transform: scale(1.02);
+}
+
+.drop-zone-icon {
+    font-size: 4em;
+    margin-bottom: 20px;
+}
+
+.drop-zone-text {
+    color: #667eea;
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
+
+.drop-zone-hint {
+    color: #999;
+    font-size: 0.9em;
+}
+
+.file-input {
+    display: none;
+}
+
+/* ============================================================================
+   LISTA DE ARCHIVOS
+   ============================================================================ */
+.file-list {
+    margin-top: 30px;
+}
+
+.file-item {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+    animation: fadeIn 0.3s ease;
+}
+
+.file-item:hover {
+    background: #e9ecef;
+    transform: translateX(5px);
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.file-icon {
+    font-size: 2em;
+}
+
+.file-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.file-name {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 3px;
+}
+
+.file-size {
+    color: #999;
+    font-size: 0.85em;
+}
+
+/* ============================================================================
+   OPCIONES Y CHECKBOXES
+   ============================================================================ */
+.options {
+    background: #f8f9ff;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+}
+
+.option-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.option-item:last-child {
+    margin-bottom: 0;
+}
+
+.option-item input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.option-item label {
+    cursor: pointer;
+    color: #333;
+    font-weight: 500;
+}
+
+/* ============================================================================
+   BOTONES
+   ============================================================================ */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+    padding: 8px 15px;
+    font-size: 0.9em;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
+.btn-success {
+    background: #28a745;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+    justify-content: center;
+}
+
+/* ============================================================================
+   BARRA DE PROGRESO
+   ============================================================================ */
+.progress {
+    background: #f8f9fa;
+    border-radius: 10px;
+    height: 30px;
+    margin: 20px 0;
+    overflow: hidden;
+    display: none;
+}
+
+.progress-bar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.9em;
+}
+
+/* ============================================================================
+   MENSAJES DE ESTADO
+   ============================================================================ */
+.status-message {
+    text-align: center;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 20px 0;
+    display: none;
+}
+
+.status-message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.status-message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.status-message.info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+.status-message.warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+/* ============================================================================
+   RESPONSIVE - COMPONENTES
+   ============================================================================ */
+@media (max-width: 768px) {
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+    }
+
+    .drop-zone {
+        padding: 40px 15px;
+    }
+
+    .drop-zone-icon {
+        font-size: 3em;
+    }
+}

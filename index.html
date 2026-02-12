@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Merger - Offline Hardened v2.0</title>
+
+    <!-- ========================================================================
+         SECURITY HEADERS
+         ======================================================================== -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="no-referrer">
+
+    <!-- ========================================================================
+         ESTILOS CSS
+         ======================================================================== -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/logging.css">
+
+    <!-- ========================================================================
+         LIBRERÍAS EXTERNAS (OFFLINE)
+         ======================================================================== -->
+    <script src="libs/pdf-lib.min.js"></script>
+    <script src="libs/pdf.min.js"></script>
+    <script src="libs/jspdf.umd.min.js"></script>
+    <script src="libs/mammoth.browser.min.js"></script>
+</head>
+<body>
+    <!-- ========================================================================
+         CONTENEDOR PRINCIPAL
+         ======================================================================== -->
+    <div class="container">
+        <!-- Badge de seguridad -->
+        <div style="text-align: center;">
+            <span class="security-badge">🔒 100% OFFLINE • SIN INTERNET • MÁXIMA SEGURIDAD</span>
+        </div>
+        
+        <!-- Encabezado -->
+        <h1>📄 PDF Merger</h1>
+        <p class="subtitle">Fusiona múltiples PDFs en un solo documento - Completamente local y seguro</p>
+
+        <!-- Zona de arrastre -->
+        <div class="drop-zone" id="dropZone">
+            <div class="drop-zone-icon">📁</div>
+            <div class="drop-zone-text">Arrastra tus archivos PDF aquí</div>
+            <div class="drop-zone-hint">o haz clic para seleccionar</div>
+            <input type="file" id="fileInput" class="file-input" multiple accept=".pdf,.docx">
+        </div>
+
+        <!-- Opciones -->
+        <div class="options">
+            <div class="option-item">
+                <input type="checkbox" id="removeBlankPages" checked>
+                <label for="removeBlankPages">Eliminar páginas en blanco automáticamente</label>
+            </div>
+        </div>
+
+        <!-- Lista de archivos -->
+        <div class="file-list" id="fileList"></div>
+
+        <!-- Barra de progreso -->
+        <div class="progress" id="progressContainer">
+            <div class="progress-bar" id="progressBar">0%</div>
+        </div>
+
+        <!-- Mensaje de estado -->
+        <div class="status-message" id="statusMessage"></div>
+
+        <!-- Botones de acción -->
+        <div class="action-buttons">
+            <button class="btn btn-primary" id="mergeBtn" disabled>🔄 Unificar Documentos</button>
+            <button class="btn btn-success" id="downloadBtn" style="display: none;">⬇️ Descargar PDF</button>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            🔐 Todos los archivos se procesan localmente en tu navegador. No se envía nada a internet.
+        </div>
+    </div>
+
+    <!-- ========================================================================
+         CONTENEDOR DE LOGS
+         ======================================================================== -->
+    <div class="log-container" id="logContainer"></div>
+
+    <!-- ========================================================================
+         SCRIPTS JAVASCRIPT (ORDEN IMPORTANTE)
+         ======================================================================== -->
+    <!-- 1. Configuración -->
+    <script src="js/config.js"></script>
+    
+    <!-- 2. Utilidades -->
+    <script src="js/utils.js"></script>
+    
+    <!-- 3. Logger -->
+    <script src="js/logger.js"></script>
+    
+    <!-- 4. Seguridad (debe cargarse temprano) -->
+    <script src="js/security-hardening.js"></script>
+    
+    <!-- 5. Manejadores -->
+    <script src="js/file-handler.js"></script>
+    <script src="js/pdf-processor.js"></script>
+    
+    <!-- 6. Controlador UI (debe ser el último) -->
+    <script src="js/ui-controller.js"></script>
+
+    <!-- ========================================================================
+         INICIALIZACIÓN FINAL
+         ======================================================================== -->
+    <script>
+        // Log de bienvenida
+        console.log('🔒 PDF Merger - Offline Hardened v2.0');
+        console.log('📦 Arquitectura modular profesional');
+        console.log('🛡️ Sistema de seguridad activo');
+        console.log('✨ Desarrollado por Jsh');
+    </script>
+</body>
+</html>
