@@ -1,301 +1,427 @@
-# 🔒 PDF Merger Offline Hardened
+# 📄 PDF Merger - Offline Hardened v2.0
 
-**Herramienta de fusión de PDFs 100% offline con máximo hardening de seguridad**
+> **Fusionador de PDFs 100% offline con arquitectura modular profesional y seguridad reforzada**
 
-Aplicación web completamente local para fusionar, manipular y procesar documentos PDF sin conexión a internet. Diseñada con máxima seguridad, privacidad y auditoría completa.
+[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/jshDevs/pdf-merger-offline-hardened)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Security](https://img.shields.io/badge/security-hardened-red.svg)]()
+[![Offline](https://img.shields.io/badge/offline-100%25-orange.svg)]()
 
----
+## ✨ Características Principales
 
-## ✨ Características
-
-### Seguridad Máxima
-- **100% Offline**: Sin CDN, sin conexión a internet
-- **Content Security Policy (CSP)**: Bloqueo de recursos externos
-- **Fetch/XHR Blocking**: Conexiones externas completamente bloqueadas
-- **Storage Disabled**: Sin localStorage, sessionStorage ni cookies
-- **SHA256 Checksums**: Verificación de integridad de librerías
-- **Sin Tracking**: Cero analytics, sin telemetría
-
-### Funcionalidades
-- Fusión de múltiples PDFs en un solo documento
-- Eliminación automática de páginas en blanco (opcional)
-- Soporte para archivos DOCX (conversión a PDF)
-- Procesamiento completamente local en el navegador
-- Sin límites de tamaño o cantidad de archivos
+✅ **100% Offline** - Procesamiento completamente local sin conexión a internet  
+✅ **Arquitectura Modular** - Código organizado en módulos reutilizables  
+✅ **Seguridad Reforzada** - Bloqueo de fetch, XHR, WebSocket y storage APIs  
+✅ **Sistema de Logging Visual** - Notificaciones en tiempo real  
+✅ **Soporte Multi-formato** - PDF y DOCX  
+✅ **Eliminación de Páginas en Blanco** - Detección automática  
+✅ **Drag & Drop** - Interfaz intuitiva de arrastrar y soltar  
+✅ **Comentado Profesionalmente** - JSDoc completo en todas las funciones  
 
 ---
 
-## 🚀 Inicio Rápido (5 minutos)
+## 📋 Tabla de Contenidos
 
-### 1. Clonar el repositorio
+- [Arquitectura Modular](#-arquitectura-modular)
+- [Instalación](#-instalación)
+- [Uso](#-uso)
+- [Módulos JavaScript](#-módulos-javascript)
+- [Seguridad](#-seguridad)
+- [Desarrollo](#-desarrollo)
+- [Librerías Utilizadas](#-librerías-utilizadas)
+- [Licencia](#-licencia)
+
+---
+
+## 🏛️ Arquitectura Modular
+
+### Estructura del Proyecto
+
+```
+pdf-merger-offline-hardened/
+├── index.html                    # HTML principal
+├── css/
+│   ├── main.css                  # Estilos base y layout
+│   ├── components.css            # Componentes UI (dropzone, botones)
+│   └── logging.css               # Sistema de notificaciones visuales
+├── js/
+│   ├── config.js                 # Configuración centralizada
+│   ├── utils.js                  # Funciones utilitarias
+│   ├── logger.js                 # Sistema de logging
+│   ├── security-hardening.js     # Capa de seguridad
+│   ├── file-handler.js           # Gestión de archivos
+│   ├── pdf-processor.js          # Procesamiento de PDFs
+│   └── ui-controller.js          # Controlador de interfaz
+├── libs/                         # Librerías offline
+│   ├── pdf-lib.min.js
+│   ├── pdf.min.js
+│   ├── pdf.worker.min.js
+│   ├── jspdf.umd.min.js
+│   └── mammoth.browser.min.js
+└── scripts/                      # Scripts de utilidad
+    ├── download-offline-libs.sh
+    └── security-audit.sh
+```
+
+### Ventajas de la Arquitectura Modular
+
+✅ **Separación de Responsabilidades** - Cada módulo tiene una función específica  
+✅ **Mantenibilidad** - Fácil de encontrar y modificar código  
+✅ **Testeable** - Módulos independientes probables por separado  
+✅ **Escalable** - Agregar features sin modificar código existente  
+✅ **Cacheo Optimizado** - Navegadores cachean módulos individualmente  
+✅ **Debugging Simplificado** - Errores apuntan a archivos específicos  
+
+---
+
+## 🚀 Instalación
+
+### 1. Clonar el Repositorio
 
 ```bash
 git clone https://github.com/jshDevs/pdf-merger-offline-hardened.git
 cd pdf-merger-offline-hardened
 ```
 
-### 2. Descargar librerías locales
+### 2. Descargar Librerías Offline (si no están incluidas)
 
 ```bash
-bash download-offline-libs.sh
+chmod +x scripts/download-offline-libs.sh
+./scripts/download-offline-libs.sh
 ```
 
-Esto descargará 5 librerías JavaScript desde CDNJS y las almacenará localmente en la carpeta `libs/`.
-
-### 3. Verificar integridad
-
+### 3. Abrir la Aplicación
 ```bash
-cd libs
-./verify.sh
-```
+# Opción 1: Abrir directamente en el navegador
+open index.html  # macOS
+xdg-open index.html  # Linux
+start index.html  # Windows
 
-Debe mostrar que todos los archivos son `OK`.
-
-### 4. Auditoría de seguridad (opcional)
-
-```bash
-cd ..
-bash security-audit.sh
-```
-
-### 5. Usar la aplicación
-
-```bash
-# Opción A: Abrir directamente
-open pdf-merger-offline-hardened.html
-
-# Opción B: Servidor local
+# Opción 2: Usar servidor local (recomendado)
 python3 -m http.server 8000
-# Luego abrir: http://localhost:8000/pdf-merger-offline-hardened.html
+# Abrir http://localhost:8000 en el navegador
 ```
 
 ---
 
-## 📁 Estructura del Proyecto
+## 💻 Uso
 
-```
-pdf-merger-offline-hardened/
-├── README.md                           ← Este archivo
-├── QUICKSTART-HARDENING.md             ← Guía rápida (5 min)
-├── HARDENING-TOTAL-GUIA-COMPLETA.md    ← Documentación completa
-├── pdf-merger-offline-hardened.html    ← Aplicación principal
-├── download-offline-libs.sh            ← Script de descarga
-├── security-audit.sh                   ← Script de auditoría
-└── libs/                               ← Librerías locales (después de ejecutar script)
-    ├── pdf-lib.min.js
-    ├── pdf.min.js
-    ├── pdf.worker.min.js
-    ├── jspdf.umd.min.js
-    ├── mammoth.browser.min.js
-    ├── .checksum
-    ├── README.txt
-    └── verify.sh
-```
+### Pasos Básicos
 
----
+1. **Seleccionar Archivos**
+   - Arrastra archivos PDF/DOCX a la zona de arrastre
+   - O haz clic para seleccionar archivos
 
-## 🔐 Garantías de Seguridad
+2. **Configurar Opciones**
+   - Marca/desmarca "Eliminar páginas en blanco"
 
-| Característica | Estado | Verificación |
-|----------------|--------|---------------|
-| **Librerías Locales** | ✅ | `ls libs/` |
-| **Sin CDN** | ✅ | Network Tab (F12) |
-| **Sin Internet** | ✅ | `fetch()` bloqueado |
-| **CSP Activo** | ✅ | DevTools Console |
-| **Storage Deshabilitado** | ✅ | `localStorage === null` |
-| **Sin Tracking** | ✅ | Network Monitor |
-| **Integridad SHA256** | ✅ | `./verify.sh` |
-| **Código Auditable** | ✅ | Código fuente |
+3. **Fusionar**
+   - Haz clic en "Unificar Documentos"
+   - Observa el progreso en tiempo real
+
+4. **Descargar**
+   - Haz clic en "Descargar PDF"
+   - El archivo fusionado se descargará automáticamente
+
+### Interfaz Visual
+
+- **Zona de Arrastre**: Área azul donde puedes soltar archivos
+- **Lista de Archivos**: Muestra archivos seleccionados con tamaño
+- **Barra de Progreso**: Indica el avance del procesamiento
+- **Logs Visuales**: Notificaciones en la esquina inferior derecha
 
 ---
 
-## 📚 Documentación
+## 📦 Módulos JavaScript
 
-- **[QUICKSTART-HARDENING.md](QUICKSTART-HARDENING.md)**: Guía de inicio rápido en 5 minutos
-- **[HARDENING-TOTAL-GUIA-COMPLETA.md](HARDENING-TOTAL-GUIA-COMPLETA.md)**: Documentación técnica completa sobre arquitectura de seguridad, auditorías y protección contra amenazas
+### 1. `config.js` - Configuración Global
 
----
+**Descripción**: Configuración centralizada de la aplicación.
 
-## 🛡️ Niveles de Protección
+**Contenido**:
+- Información de la app (nombre, versión, autor)
+- Configuración del logger
+- Parámetros de procesamiento
+- Rutas de librerías
+- Opciones de seguridad
+- Mensajes de la aplicación
 
-### Nivel 1: Content Security Policy (CSP)
-- Bloqueo de carga de recursos externos
-- Whitelist solo para archivos locales
-- Respaldado por el navegador
-
-### Nivel 2: JavaScript Hardening
-- `fetch()` bloqueado para URLs externas
-- `XMLHttpRequest` bloqueado para URLs externas
-- `localStorage`/`sessionStorage` deshabilitados
-- Logging exhaustivo de intentos
-
-### Nivel 3: Validaciones
-- Validación de tipos de archivo
-- Validación de tamaños
-- Escapado de HTML
-- Verificación de integridad
-
-### Nivel 4: Privacidad
-- Sin almacenamiento persistente
-- Sin cookies
-- Sin analytics ni tracking
-- Datos solo en memoria
-- Limpieza al cerrar navegador
-
----
-
-## 🔍 Verificación de Seguridad
-
-### En DevTools Console (F12)
-
+**Ejemplo**:
 ```javascript
-// 1. Verificar que localStorage está deshabilitado
-window.localStorage === null  // Debe ser: true
-
-// 2. Verificar bloqueo de conexiones externas
-fetch('https://google.com').catch(e => console.log(e.message))
-// Debe mostrar: "Conexiones externas bloqueadas"
-
-// 3. Verificar librerías cargadas
-typeof PDFLib !== 'undefined' && 
-typeof pdfjsLib !== 'undefined' && 
-typeof jspdf !== 'undefined'
-// Debe ser: true
+const APP_CONFIG = {
+    app: {
+        name: 'PDF Merger - Offline Hardened',
+        version: '2.0.0'
+    },
+    processing: {
+        removeBlankPages: true,
+        blankPageThreshold: 10
+    }
+};
 ```
 
-### En Network Tab (F12)
+### 2. `utils.js` - Funciones Utilitarias
 
-- **Cero conexiones** a CDN o dominios externos
-- Solo carga de recursos locales: `file://` o `localhost`
+**Descripción**: Funciones de ayuda reutilizables.
+
+**Funciones Principales**:
+- `formatFileSize(bytes)` - Formatea tamaños de archivo
+- `escapeHtml(text)` - Previene XSS
+- `generateUniqueFilename()` - Genera nombres únicos
+- `isValidFileType(filename)` - Valida extensiones
+- `downloadBlob(blob, filename)` - Descarga archivos
+- `debounce(func, wait)` - Limita frecuencia de ejecución
+
+### 3. `logger.js` - Sistema de Logging
+
+**Descripción**: Sistema de notificaciones visuales en tiempo real.
+
+**Clase**: `SecurityLogger`
+
+**Métodos**:
+- `log(type, title, message)` - Registra un log
+- `removeLog(id)` - Elimina un log específico
+- `clear()` - Limpia todos los logs
+
+**Tipos de Log**:
+- `success` ✅ - Operaciones exitosas
+- `error` ❌ - Errores
+- `warning` ⚠️ - Advertencias
+- `info` ℹ️ - Información
+- `security` 🔒 - Eventos de seguridad
+
+### 4. `security-hardening.js` - Capa de Seguridad
+
+**Descripción**: Implementación de medidas de seguridad offline.
+
+**Clase**: `SecurityHardening`
+
+**Métodos Estáticos**:
+- `init()` - Inicializa todas las protecciones
+- `disableStorage()` - Bloquea localStorage/sessionStorage
+- `blockFetch()` - Bloquea fetch() para URLs externas
+- `blockXHR()` - Bloquea XMLHttpRequest externas
+- `blockWebSocket()` - Bloquea WebSocket completamente
+- `monitorElementCreation()` - Monitorea creación de elementos
+- `verifyLibraries()` - Verifica que las librerías estén cargadas
+
+### 5. `file-handler.js` - Manejador de Archivos
+
+**Descripción**: Gestión de selección y validación de archivos.
+
+**Clase**: `FileHandler`
+
+**Métodos**:
+- `addFiles(files)` - Agrega archivos a la lista
+- `removeFile(index)` - Elimina un archivo
+- `getFiles()` - Obtiene todos los archivos
+- `clear()` - Limpia la lista
+- `getInfo()` - Obtiene información resumida
+- `render()` - Renderiza lista en el DOM
+
+### 6. `pdf-processor.js` - Procesador de PDFs
+
+**Descripción**: Lógica de fusión y procesamiento de documentos.
+
+**Clase**: `PDFProcessor`
+
+**Métodos**:
+- `mergeFiles(files, removeBlank, callback)` - Fusiona archivos
+- `_processPDF(file, removeBlank)` - Procesa un PDF
+- `_processDOCX(file)` - Procesa un DOCX
+- `_isPageBlank(file, pageIndex)` - Detecta páginas en blanco
+- `downloadMergedPDF(filename)` - Descarga el resultado
+- `getInfo()` - Obtiene info del PDF fusionado
+
+### 7. `ui-controller.js` - Controlador de Interfaz
+
+**Descripción**: Gestión de eventos y actualización de UI.
+
+**Clase**: `UIController`
+
+**Métodos**:
+- `init()` - Inicializa eventos
+- `handleFiles(files)` - Maneja selección de archivos
+- `handleMerge()` - Inicia proceso de fusión
+- `handleDownload()` - Descarga el PDF
+- `showProgress(percentage)` - Actualiza barra de progreso
+- `showStatus(message, type)` - Muestra mensajes de estado
 
 ---
 
-## 🎯 Casos de Uso
+## 🔒 Seguridad
 
-- **Fusión de documentos confidenciales** sin exponerlos a internet
-- **Entornos corporativos** con restricciones de red
-- **Máxima privacidad** para datos sensibles
-- **Auditorías de seguridad** y compliance
-- **Ambientes air-gapped** (sin conexión)
-- **Educación** sobre seguridad web
+### Medidas Implementadas
 
----
+#### 1. **Content Security Policy (CSP)**
+```html
+<meta http-equiv="Content-Security-Policy" 
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; ...">
+```
 
-## 🧪 Testing y Auditoría
+#### 2. **Bloqueo de Conexiones Externas**
+- `fetch()` bloqueado para URLs http/https
+- `XMLHttpRequest` bloqueado para URLs externas
+- `WebSocket` completamente bloqueado
 
-### Script de Auditoría Automática
+#### 3. **Deshabilitación de Storage**
+- `localStorage` deshabilitado
+- `sessionStorage` deshabilitado
+
+#### 4. **Headers de Seguridad**
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `X-XSS-Protection: 1; mode=block`
+- `Referrer-Policy: no-referrer`
+
+#### 5. **Monitoreo de Creación de Elementos**
+- Scripts e iframes con src externa bloqueados
+- Validación de atributos `src`
+
+### Auditoria de Seguridad
 
 ```bash
-bash security-audit.sh
-```
-
-Verifica:
-- ✅ Existencia de librerías locales
-- ✅ Integridad SHA256 de archivos
-- ✅ Ausencia de URLs externas en HTML
-- ✅ Configuración CSP
-- ✅ Permisos de archivos
-- ✅ Estructura del proyecto
-
-### Modo Paranoia Máxima
-
-Para garantizar 0% de posibilidad de conexión:
-
-```bash
-# 1. Desconectar WiFi
-# 2. Desconectar Ethernet
-# 3. Desactivar Bluetooth
-# 4. Abrir aplicación
-# 5. ¡Imposible conectarse a internet!
+chmod +x scripts/security-audit.sh
+./scripts/security-audit.sh
 ```
 
 ---
 
-## 🌍 Tecnologías Utilizadas
+## 👨‍💻 Desarrollo
 
-- **[pdf-lib](https://pdf-lib.js.org/)** (v1.17.1) - Manipulación de PDFs
-- **[PDF.js](https://mozilla.github.io/pdf.js/)** (v3.11.174) - Lectura de PDFs
-- **[jsPDF](https://github.com/parallax/jsPDF)** (v2.5.1) - Generación de PDFs
-- **[Mammoth.js](https://github.com/mwilliamson/mammoth.js)** (v1.6.0) - Conversión DOCX
-- **Vanilla JavaScript** - Sin frameworks externos
-
----
-
-## 📋 Requisitos
+### Requisitos
 
 - Navegador moderno (Chrome, Firefox, Edge, Safari)
-- Bash shell (para scripts de instalación)
-- `curl` (para descarga de librerías)
-- `sha256sum` (para verificación de integridad)
+- Servidor web local (opcional pero recomendado)
+
+### Estructura de Desarrollo
+
+```javascript
+// 1. Modificar configuración en config.js
+APP_CONFIG.processing.blankPageThreshold = 20;
+
+// 2. Añadir funciones utilitarias en utils.js
+Utils.newFunction = function() { ... };
+
+// 3. Extender clases existentes
+class PDFProcessor {
+    newMethod() { ... }
+}
+
+// 4. Crear nuevos módulos siguiendo el patrón
+```
+
+### Convenciones de Código
+
+✅ **JSDoc** en todas las funciones públicas  
+✅ **CamelCase** para clases  
+✅ **camelCase** para funciones y variables  
+✅ **UPPER_CASE** para constantes  
+✅ **Comentarios** descriptivos en secciones complejas  
+✅ **Separadores visuales** en archivos largos  
+
+### Testing
+
+```bash
+# Pruebas manuales recomendadas:
+1. Fusionar 2-3 PDFs pequeños
+2. Fusionar PDFs con páginas en blanco
+3. Fusionar DOCX
+4. Probar drag & drop
+5. Verificar logs visuales
+6. Revisar mensajes de error
+```
 
 ---
 
-## 🚨 Advertencias
+## 📚 Librerías Utilizadas
 
-- **NO** modificar archivos en `libs/` manualmente
-- **SIEMPRE** ejecutar `verify.sh` después de descargar
-- **NUNCA** cargar librerías de fuentes no confiables
-- **VERIFICAR** checksums antes de usar en producción
+| Librería | Versión | Propósito |
+|----------|---------|----------|
+| **pdf-lib** | Latest | Manipulación de PDFs |
+| **pdf.js** | Latest | Lectura de PDFs (detección de páginas en blanco) |
+| **jsPDF** | Latest | Generación de PDFs desde HTML |
+| **mammoth.js** | Latest | Conversión de DOCX a HTML |
+
+### Descarga de Librerías
+
+Todas las librerías están incluidas localmente en `libs/` para funcionamiento 100% offline.
+
+---
+
+## 📝 Changelog
+
+### v2.0.0 (2026-02-12)
+- ✨ Refactorización completa en arquitectura modular
+- ✨ Sistema de logging visual en tiempo real
+- ✨ JSDoc completo en todos los módulos
+- ✨ Configuración centralizada en config.js
+- ✨ Separación de CSS en 3 archivos modulares
+- ✨ Mejoras de seguridad y hardening
+- ✨ Código profesionalmente comentado
+
+### v1.0.0
+- 🚀 Versión inicial monolítica
+- ✅ Fusión básica de PDFs
+- ✅ Seguridad offline
 
 ---
 
 ## 🤝 Contribuciones
 
-Contribuciones son bienvenidas. Por favor:
+Las contribuciones son bienvenidas. Por favor:
 
 1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/amazing-feature`)
-3. Commit tus cambios (`git commit -m 'Add amazing feature'`)
-4. Push a la rama (`git push origin feature/amazing-feature`)
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Abre un Pull Request
 
-### Guías de Contribución
+---
 
-- Mantener el principio de **cero conexiones externas**
-- Documentar cambios de seguridad exhaustivamente
-- Incluir tests y verificaciones
-- Actualizar checksums si se modifican librerías
+## 📌 Roadmap
+
+- [ ] Añadir soporte para más formatos (images, TXT)
+- [ ] Implementar previsualización de PDFs
+- [ ] Añadir marcas de agua
+- [ ] Compresión de PDFs
+- [ ] División de PDFs
+- [ ] Encriptación de PDFs
+- [ ] Tests unitarios automatizados
+- [ ] PWA (Progressive Web App)
 
 ---
 
-## 📝 Licencia
+## 💬 Soporte
 
-MIT License - Ver archivo [LICENSE](LICENSE) para detalles
+Si encuentras algún bug o tienes sugerencias:
 
----
-
-## 🙏 Agradecimientos
-
-- Proyecto inspirado en la necesidad de máxima privacidad y seguridad
-- Comunidad de desarrollo de herramientas de seguridad
-- Desarrolladores de las librerías open-source utilizadas
+- Abre un [Issue](https://github.com/jshDevs/pdf-merger-offline-hardened/issues)
+- Envía un Pull Request
 
 ---
 
-## 📞 Contacto
+## 📜 Licencia
 
-**Autor**: Jsh  
-**GitHub**: [@jshDevs](https://github.com/jshDevs)  
-**Ubicación**: El Salvador
+Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para más detalles.
 
 ---
 
-## 🔗 Links Útiles
+## ✨ Autor
 
-- [Documentación Completa](HARDENING-TOTAL-GUIA-COMPLETA.md)
-- [Inicio Rápido](QUICKSTART-HARDENING.md)
-- [Repositorio GitHub](https://github.com/jshDevs/pdf-merger-offline-hardened)
-- [Reporte de Issues](https://github.com/jshDevs/pdf-merger-offline-hardened/issues)
+**Jsh** - [jshDevs](https://github.com/jshDevs)
+
+---
+
+## 🚀 Estado del Proyecto
+
+![Status](https://img.shields.io/badge/status-active-success.svg)
+![Maintenance](https://img.shields.io/badge/maintained-yes-green.svg)
+![Code Quality](https://img.shields.io/badge/code%20quality-A+-brightgreen.svg)
 
 ---
 
 <div align="center">
-
-## ⭐ Si te resulta útil, ¡dale una estrella!
-
-### 🔒 **100% Offline • Máxima Seguridad • Cero Tracking**
-
-**Version**: 1.0.0  
-**Status**: ✅ PRODUCTION READY
-
+  <p>👍 Si te gusta este proyecto, ¡dale una estrella! ⭐</p>
+  <p>Hecho con ❤️ y JavaScript</p>
 </div>
