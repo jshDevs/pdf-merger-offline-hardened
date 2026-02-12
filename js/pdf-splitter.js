@@ -1,182 +1,195 @@
 /**
  * ============================================================================
- * DIVISOR DE PDFs
+ * DIVISOR Y EXTRACTOR DE PÁGINAS PDF
  * ============================================================================
  * Archivo: pdf-splitter.js
- * Descripción: División y extracción de páginas de documentos PDF
+ * Descripción: División de PDFs y extracción de páginas específicas
+ * Fase: 1 - Quick Wins
  * ============================================================================
  */
 
 class PDFSplitter {
     constructor() {
-        this.currentPDF = null;
-        this.pageCount = 0;
+        this.loadedPdf = null;
+        this.originalFile = null;
     }
 
     /**
-     * Carga un PDF para división
+     * Carga un archivo PDF para división
      * @param {File} file - Archivo PDF
-     * @returns {Promise<PDFDocument>} Documento cargado
+     * @returns {Promise<void>}
      */
     async loadPDF(file) {
         try {
             const arrayBuffer = await file.arrayBuffer();
-            this.currentPDF = await PDFLib.PDFDocument.load(arrayBuffer);
-            this.pageCount = this.currentPDF.getPageCount();
+            this.loadedPdf = await PDFLib.PDFDocument.load(arrayBuffer);
+            this.originalFile = file;
             
             logger.log('success', 'PDF Cargado', 
-                      `${file.name} - ${this.pageCount} página(s)`);
-            
-            return this.currentPDF;
+                      `${file.name} - ${this.loadedPdf.getPageCount()} páginas`);
         } catch (error) {
-            logger.log('error', 'Error al Cargar PDF', error.message);
+            logger.log('error', 'Error de Carga', error.message);
             throw error;
         }
     }
 
     /**
      * Extrae páginas específicas
-     * @param {Array<number>} pageNumbers - Números de página (1-based)
-     * @returns {Promise<Uint8Array>} PDF con páginas extraídas
+     * @param {Array<number>} pageNumbers - Números de página (1-indexed)
+     * @param {string} outputName - Nombre del archivo de salida
+     * @returns {Promise<Uint8Array>} PDF extraído
      */
-    async extractPages(pageNumbers) {
-        if (!this.currentPDF) {
+    async extractPages(pageNumbers, outputName = null) {
+        if (!this.loadedPdf) {
             throw new Error('No hay PDF cargado');
         }
 
         try {
-            const newPDF = await PDFLib.PDFDocument.create();
-            
-            // Convertir a 0-based y validar
-            const pageIndices = pageNumbers
-                .map(n => n - 1)
-                .filter(i => i >= 0 && i < this.pageCount);
+            const newPdf = await PDFLib.PDFDocument.create();
+            const totalPages = this.loadedPdf.getPageCount();
 
-            if (pageIndices.length === 0) {
-                throw new Error('Números de página inválidos');
-            }
+            // Validar números de página
+            pageNumbers.forEach(pageNum => {
+                if (pageNum < 1 || pageNum > totalPages) {
+                    throw new Error(`Página ${pageNum} fuera de rango (1-${totalPages})`);
+                }
+            });
 
-            // Copiar páginas
-            const copiedPages = await newPDF.copyPages(this.currentPDF, pageIndices);
-            copiedPages.forEach(page => newPDF.addPage(page));
+            // Copiar páginas seleccionadas
+            const pageIndices = pageNumbers.map(n => n - 1);
+            const copiedPages = await newPdf.copyPages(this.loadedPdf, pageIndices);
+            
+            copiedPages.forEach(page => newPdf.addPage(page));
 
-            const pdfBytes = await newPDF.save();
+            const pdfBytes = await newPdf.save();
             
-            logger.log('success', 'Páginas Extraídas', 
-                      `${pageIndices.length} página(s) extraída(s)`);
-            
+            logger.log('success', 'Extracción Completada', 
+                      `${pageNumbers.length} página(s) extraída(s)`);
+
             return pdfBytes;
+
         } catch (error) {
-            logger.log('error', 'Error al Extraer', error.message);
+            logger.log('error', 'Error de Extracción', error.message);
             throw error;
         }
     }
 
     /**
-     * Divide por rango de páginas
-     * @param {number} start - Página inicial (1-based)
-     * @param {number} end - Página final (1-based)
-     * @returns {Promise<Uint8Array>} PDF con rango de páginas
+     * Divide el PDF en rangos
+     * @param {Array<Array<number>>} ranges - Rangos [[inicio, fin], ...]
+     * @returns {Promise<Array<{bytes: Uint8Array, range: string}>>} PDFs divididos
      */
-    async extractRange(start, end) {
-        const pageNumbers = [];
-        for (let i = start; i <= end; i++) {
-            pageNumbers.push(i);
+    async splitByRanges(ranges) {
+        if (!this.loadedPdf) {
+            throw new Error('No hay PDF cargado');
         }
-        return await this.extractPages(pageNumbers);
+
+        try {
+            const results = [];
+
+            for (const [start, end] of ranges) {
+                const pageNumbers = [];
+                for (let i = start; i <= end; i++) {
+                    pageNumbers.push(i);
+                }
+
+                const pdfBytes = await this.extractPages(pageNumbers);
+                results.push({
+                    bytes: pdfBytes,
+                    range: `${start}-${end}`,
+                    pageCount: pageNumbers.length
+                });
+            }
+
+            logger.log('success', 'División Completada', 
+                      `${ranges.length} archivo(s) generado(s)`);
+
+            return results;
+
+        } catch (error) {
+            logger.log('error', 'Error de División', error.message);
+            throw error;
+        }
     }
 
     /**
      * Divide el PDF cada N páginas
      * @param {number} pagesPerFile - Páginas por archivo
-     * @returns {Promise<Array<Uint8Array>>} Array de PDFs divididos
+     * @returns {Promise<Array<{bytes: Uint8Array, range: string}>>} PDFs divididos
      */
     async splitEvery(pagesPerFile) {
-        if (!this.currentPDF) {
+        if (!this.loadedPdf) {
             throw new Error('No hay PDF cargado');
         }
 
-        const chunks = [];
-        const totalChunks = Math.ceil(this.pageCount / pagesPerFile);
+        const totalPages = this.loadedPdf.getPageCount();
+        const ranges = [];
 
-        for (let i = 0; i < totalChunks; i++) {
-            const start = i * pagesPerFile + 1;
-            const end = Math.min((i + 1) * pagesPerFile, this.pageCount);
-            
-            const chunk = await this.extractRange(start, end);
-            chunks.push(chunk);
+        for (let i = 1; i <= totalPages; i += pagesPerFile) {
+            const end = Math.min(i + pagesPerFile - 1, totalPages);
+            ranges.push([i, end]);
         }
 
-        logger.log('success', 'PDF Dividido', 
-                  `${chunks.length} archivo(s) generado(s)`);
-
-        return chunks;
+        return await this.splitByRanges(ranges);
     }
 
     /**
-     * Extrae páginas impares
-     * @returns {Promise<Uint8Array>} PDF con páginas impares
+     * Extrae páginas pares o impares
+     * @param {string} type - 'odd' o 'even'
+     * @returns {Promise<Uint8Array>} PDF con páginas filtradas
      */
-    async extractOddPages() {
-        const oddPages = [];
-        for (let i = 1; i <= this.pageCount; i += 2) {
-            oddPages.push(i);
-        }
-        return await this.extractPages(oddPages);
-    }
-
-    /**
-     * Extrae páginas pares
-     * @returns {Promise<Uint8Array>} PDF con páginas pares
-     */
-    async extractEvenPages() {
-        const evenPages = [];
-        for (let i = 2; i <= this.pageCount; i += 2) {
-            evenPages.push(i);
-        }
-        return await this.extractPages(evenPages);
-    }
-
-    /**
-     * Elimina páginas específicas (retorna PDF sin esas páginas)
-     * @param {Array<number>} pageNumbers - Números de página a eliminar (1-based)
-     * @returns {Promise<Uint8Array>} PDF sin las páginas especificadas
-     */
-    async deletePages(pageNumbers) {
-        if (!this.currentPDF) {
+    async extractOddOrEven(type) {
+        if (!this.loadedPdf) {
             throw new Error('No hay PDF cargado');
         }
 
-        const pagesToKeep = [];
-        for (let i = 1; i <= this.pageCount; i++) {
-            if (!pageNumbers.includes(i)) {
-                pagesToKeep.push(i);
+        const totalPages = this.loadedPdf.getPageCount();
+        const pageNumbers = [];
+
+        for (let i = 1; i <= totalPages; i++) {
+            if (type === 'odd' && i % 2 !== 0) {
+                pageNumbers.push(i);
+            } else if (type === 'even' && i % 2 === 0) {
+                pageNumbers.push(i);
             }
         }
 
-        return await this.extractPages(pagesToKeep);
+        return await this.extractPages(pageNumbers);
     }
 
     /**
-     * Obtiene información del PDF cargado
-     * @returns {Object} Información del PDF
+     * Descarga un PDF extraído
+     * @param {Uint8Array} pdfBytes - Bytes del PDF
+     * @param {string} filename - Nombre del archivo
+     */
+    downloadPDF(pdfBytes, filename = null) {
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const finalFilename = filename || Utils.generateUniqueFilename('extracted', 'pdf');
+        
+        Utils.downloadBlob(blob, finalFilename);
+        
+        logger.log('success', 'Descarga Iniciada', `Archivo: ${finalFilename}`);
+    }
+
+    /**
+     * Obtiene información del PDF
+     * @returns {Object|null} Información
      */
     getInfo() {
+        if (!this.loadedPdf) return null;
+
         return {
-            loaded: this.currentPDF !== null,
-            pageCount: this.pageCount
+            pageCount: this.loadedPdf.getPageCount(),
+            filename: this.originalFile ? this.originalFile.name : 'Desconocido'
         };
     }
 
     /**
-     * Descarga un PDF procesado
-     * @param {Uint8Array} pdfBytes - Bytes del PDF
-     * @param {string} filename - Nombre del archivo
+     * Resetea el divisor
      */
-    downloadPDF(pdfBytes, filename) {
-        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-        Utils.downloadBlob(blob, filename);
-        logger.log('success', 'Descarga Iniciada', filename);
+    reset() {
+        this.loadedPdf = null;
+        this.originalFile = null;
     }
 }
 

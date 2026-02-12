@@ -3,88 +3,71 @@
  * ROTADOR DE PÁGINAS PDF
  * ============================================================================
  * Archivo: pdf-rotator.js
- * Descripción: Rotación de páginas individuales o masivas en PDFs
+ * Descripción: Rotación de páginas individuales o masiva
+ * Fase: 1 - Quick Wins
  * ============================================================================
  */
 
 class PDFRotator {
     constructor() {
-        this.rotations = new Map(); // pageIndex -> degrees
+        this.loadedPdf = null;
+        this.loadedPdfBytes = null;
     }
 
     /**
-     * Establece la rotación para una página específica
-     * @param {number} pageIndex - Índice de la página (0-based)
-     * @param {number} degrees - Grados de rotación (90, 180, 270)
+     * Carga un archivo PDF para rotación
+     * @param {File} file - Archivo PDF a cargar
+     * @returns {Promise<void>}
      */
-    setPageRotation(pageIndex, degrees) {
-        const validDegrees = [0, 90, 180, 270];
-        if (!validDegrees.includes(degrees)) {
-            logger.log('error', 'Rotación Inválida', 
-                      `Los grados deben ser: ${validDegrees.join(', ')}`);
-            return;
-        }
-
-        this.rotations.set(pageIndex, degrees);
-        logger.log('info', 'Rotación Configurada', 
-                  `Página ${pageIndex + 1}: ${degrees}°`);
-    }
-
-    /**
-     * Rota todas las páginas con el mismo ángulo
-     * @param {number} degrees - Grados de rotación
-     */
-    rotateAll(degrees) {
-        this.rotations.clear();
-        logger.log('info', 'Rotación Global', `Todas las páginas: ${degrees}°`);
-        return degrees;
-    }
-
-    /**
-     * Aplica las rotaciones configuradas a un PDF
-     * @param {PDFDocument} pdfDoc - Documento PDF de pdf-lib
-     * @returns {PDFDocument} PDF con rotaciones aplicadas
-     */
-    async applyRotations(pdfDoc) {
-        const pages = pdfDoc.getPages();
-        let rotatedCount = 0;
-
-        for (const [pageIndex, degrees] of this.rotations.entries()) {
-            if (pageIndex < pages.length) {
-                const page = pages[pageIndex];
-                page.setRotation(PDFLib.degrees(degrees));
-                rotatedCount++;
-            }
-        }
-
-        logger.log('success', 'Rotaciones Aplicadas', 
-                  `${rotatedCount} página(s) rotada(s)`);
-
-        return pdfDoc;
-    }
-
-    /**
-     * Rota páginas específicas de un archivo PDF
-     * @param {File} file - Archivo PDF
-     * @param {Object} rotationMap - Mapa de rotaciones {pageIndex: degrees}
-     * @returns {Promise<Uint8Array>} PDF rotado
-     */
-    async rotatePDF(file, rotationMap = {}) {
+    async loadPDF(file) {
         try {
             const arrayBuffer = await file.arrayBuffer();
-            const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+            this.loadedPdf = await PDFLib.PDFDocument.load(arrayBuffer);
             
-            // Aplicar rotaciones
-            for (const [pageIndex, degrees] of Object.entries(rotationMap)) {
-                this.setPageRotation(parseInt(pageIndex), degrees);
-            }
+            logger.log('success', 'PDF Cargado', 
+                      `${file.name} listo para rotación`);
+        } catch (error) {
+            logger.log('error', 'Error de Carga', error.message);
+            throw error;
+        }
+    }
+
+    /**
+     * Rota páginas específicas
+     * @param {Array<number>} pageNumbers - Números de página (1-indexed)
+     * @param {number} degrees - Grados de rotación (90, 180, 270)
+     * @returns {Promise<Uint8Array>} PDF modificado
+     */
+    async rotatePages(pageNumbers, degrees) {
+        if (!this.loadedPdf) {
+            throw new Error('No hay PDF cargado');
+        }
+
+        if (![90, 180, 270, -90].includes(degrees)) {
+            throw new Error('Grados inválidos. Usar: 90, 180, 270 o -90');
+        }
+
+        try {
+            const pages = this.loadedPdf.getPages();
             
-            await this.applyRotations(pdfDoc);
+            pageNumbers.forEach(pageNum => {
+                if (pageNum < 1 || pageNum > pages.length) {
+                    throw new Error(`Página ${pageNum} fuera de rango`);
+                }
+                
+                const page = pages[pageNum - 1];
+                const currentRotation = page.getRotation().angle;
+                const newRotation = (currentRotation + degrees) % 360;
+                page.setRotation(PDFLib.degrees(newRotation));
+            });
+
+            this.loadedPdfBytes = await this.loadedPdf.save();
             
-            const pdfBytes = await pdfDoc.save();
-            logger.log('success', 'PDF Rotado', `${file.name} procesado`);
-            
-            return pdfBytes;
+            logger.log('success', 'Rotación Completada', 
+                      `${pageNumbers.length} página(s) rotada(s) ${degrees}°`);
+
+            return this.loadedPdfBytes;
+
         } catch (error) {
             logger.log('error', 'Error de Rotación', error.message);
             throw error;
@@ -92,53 +75,59 @@ class PDFRotator {
     }
 
     /**
-     * Incrementa la rotación de una página en 90°
-     * @param {number} pageIndex - Índice de la página
+     * Rota todas las páginas del documento
+     * @param {number} degrees - Grados de rotación
+     * @returns {Promise<Uint8Array>} PDF modificado
      */
-    rotatePageClockwise(pageIndex) {
-        const currentRotation = this.rotations.get(pageIndex) || 0;
-        const newRotation = (currentRotation + 90) % 360;
-        this.setPageRotation(pageIndex, newRotation);
-        return newRotation;
+    async rotateAllPages(degrees) {
+        if (!this.loadedPdf) {
+            throw new Error('No hay PDF cargado');
+        }
+
+        const pageCount = this.loadedPdf.getPageCount();
+        const allPages = Array.from({length: pageCount}, (_, i) => i + 1);
+        
+        return await this.rotatePages(allPages, degrees);
     }
 
     /**
-     * Decrementa la rotación de una página en 90°
-     * @param {number} pageIndex - Índice de la página
+     * Descarga el PDF rotado
+     * @param {string} filename - Nombre del archivo (opcional)
      */
-    rotatePageCounterClockwise(pageIndex) {
-        const currentRotation = this.rotations.get(pageIndex) || 0;
-        const newRotation = (currentRotation - 90 + 360) % 360;
-        this.setPageRotation(pageIndex, newRotation);
-        return newRotation;
+    downloadRotatedPDF(filename = null) {
+        if (!this.loadedPdfBytes) {
+            logger.log('error', 'Sin PDF', 'No hay PDF rotado para descargar');
+            return;
+        }
+
+        const blob = new Blob([this.loadedPdfBytes], { type: 'application/pdf' });
+        const finalFilename = filename || Utils.generateUniqueFilename('rotated', 'pdf');
+        
+        Utils.downloadBlob(blob, finalFilename);
+        
+        logger.log('success', 'Descarga Iniciada', `Archivo: ${finalFilename}`);
     }
 
     /**
-     * Limpia todas las rotaciones configuradas
+     * Obtiene información del PDF cargado
+     * @returns {Object|null} Información del PDF
      */
-    clearRotations() {
-        this.rotations.clear();
-        logger.log('info', 'Rotaciones Limpiadas', 'Todas las configuraciones borradas');
-    }
+    getInfo() {
+        if (!this.loadedPdf) return null;
 
-    /**
-     * Obtiene la rotación actual de una página
-     * @param {number} pageIndex - Índice de la página
-     * @returns {number} Grados de rotación
-     */
-    getPageRotation(pageIndex) {
-        return this.rotations.get(pageIndex) || 0;
-    }
-
-    /**
-     * Obtiene información de todas las rotaciones
-     * @returns {Object} Información de rotaciones
-     */
-    getRotationsInfo() {
         return {
-            totalRotations: this.rotations.size,
-            rotations: Object.fromEntries(this.rotations)
+            pageCount: this.loadedPdf.getPageCount(),
+            title: this.loadedPdf.getTitle() || 'Sin título',
+            author: this.loadedPdf.getAuthor() || 'Desconocido'
         };
+    }
+
+    /**
+     * Resetea el rotador
+     */
+    reset() {
+        this.loadedPdf = null;
+        this.loadedPdfBytes = null;
     }
 }
 
